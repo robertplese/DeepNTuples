@@ -26,7 +26,8 @@ scram b -j8
 ReReco to include HGCAL timing
 ========
 HLT instructions from [HLT](https://cmshltupgrade.docs.cern.ch/RunningInstructions/#to-run-on-the-spring24-samples-use-cmssw_14_2_0_pre1-or-later)
-- Rerun L1 
+- Rerun L1
+   in the last line -n 400 is chosen due to the size of the file (eos accepts only files of 50 GB)
 
 ```
 cmsDriver.py Phase2 -s L1,L1TrackTrigger \
@@ -42,11 +43,10 @@ cmsDriver.py Phase2 -s L1,L1TrackTrigger \
 --inputCommands="keep *, drop l1tPFJets_*_*_*, drop l1tTrackerMuons_l1tTkMuonsGmt*_*_HLT" \
 --outputCommands="drop l1tTrackerMuons_l1tTkMuonsGmt*_*_HLT" \
 --mc \
--n -1 --nThreads 1
+-n 400 --nThreads 1
 ```
 
-- Rerun HLT
-  in the last line -n 400 is chosen due to the size of the file (eos accepts only files of 50 GB)
+- Rerun HLT  
 ```
 cmsDriver.py Phase2 -s L1P2GT,HLT:75e33 --processName=HLTX \
 --conditions auto:phase2_realistic_T33 \
@@ -57,7 +57,7 @@ cmsDriver.py Phase2 -s L1P2GT,HLT:75e33 --processName=HLTX \
 --filein file:output_Phase2_L1T.root \
 --inputCommands='keep *, drop *_hlt*_*_HLT, drop triggerTriggerFilterObjectWithRefs_l1t*_*_HLT' \
 --mc \
--n 400 --nThreads 1
+-n -1 --nThreads 1
 
 ```
 - Run Rereco, using [step3](https://cmsweb.cern.ch/couchdb/reqmgr_config_cache/c6c8107a92728c9d3c7d4e36f2560c01/configFile) process, but modified the following
