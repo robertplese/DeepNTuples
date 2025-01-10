@@ -36,7 +36,7 @@ cmsDriver.py Phase2 -s L1,L1TrackTrigger \
 --eventcontent FEVTDEBUGHLT \
 --datatier GEN-SIM-DIGI-RAW-MINIAOD \
 --customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_1000,Configuration/DataProcessing/Utils.addMonitoring,L1Trigger/Configuration/customisePhase2FEVTDEBUGHLT.customisePhase2FEVTDEBUGHLT,L1Trigger/Configuration/customisePhase2TTOn110.customisePhase2TTOn110 \
---filein /store/mc/Phase2Spring24DIGIRECOMiniAOD/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW-MINIAOD/PU200_AllTP_140X_mcRun4_realistic_v4-v1/2560000/11d1f6f0-5f03-421e-90c7-b5815197fc85.root \
+--filein /eos/cms/store/mc/Phase2Spring24DIGIRECOMiniAOD/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW-MINIAOD/PU200_AllTP_140X_mcRun4_realistic_v4-v1/130000/51b389e2-ddb2-4c14-9d4f-403546254c83.root \
 --fileout file:output_Phase2_L1T.root \
 --python_filename rerunL1_cfg.py \
 --inputCommands="keep *, drop l1tPFJets_*_*_*, drop l1tTrackerMuons_l1tTkMuonsGmt*_*_HLT" \
@@ -46,6 +46,7 @@ cmsDriver.py Phase2 -s L1,L1TrackTrigger \
 ```
 
 - Rerun HLT
+  in the last line -n 400 is chosen due to the size of the file (eos accepts only files of 50 GB)
 ```
 cmsDriver.py Phase2 -s L1P2GT,HLT:75e33 --processName=HLTX \
 --conditions auto:phase2_realistic_T33 \
@@ -56,7 +57,7 @@ cmsDriver.py Phase2 -s L1P2GT,HLT:75e33 --processName=HLTX \
 --filein file:output_Phase2_L1T.root \
 --inputCommands='keep *, drop *_hlt*_*_HLT, drop triggerTriggerFilterObjectWithRefs_l1t*_*_HLT' \
 --mc \
--n 1 --nThreads 1
+-n 400 --nThreads 1
 
 ```
 - Run Rereco, using [step3](https://cmsweb.cern.ch/couchdb/reqmgr_config_cache/c6c8107a92728c9d3c7d4e36f2560c01/configFile) process, but modified the following
