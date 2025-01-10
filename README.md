@@ -20,7 +20,7 @@ git checkout phase2_142X_hgcaltiming
 git submodule init
 git submodule update
 
-scram b -j 8
+scram b -j8
 ```
 
 ReReco to include HGCAL timing
