@@ -7,7 +7,7 @@ Installation (CMSSW 14_2_0_pre1) & setup for rereco
 
 ```
 cmsrel CMSSW_14_2_0_pre1
-cd 14_2_0_pre1/src
+cd CMSSW_14_2_0_pre1/src/
 cmsenv
 git cms-init
 git cms-merge-topic 46019
@@ -15,7 +15,7 @@ git cms-merge-topic 46054
 git cherry-pick b4e8c86523036f8211f096b9145c99a9368c452c 63e73168549cd1e30d404d2104db6c625f5a13e4 # Adding #45508 and #46060
 git clone https://github.com/robertplese/DeepNTuples.git
 cd DeepNTuples
-git checkout CMSSW_142X_phase2
+git checkout phase2_142X_hgcaltiming
 # Add JetToolBox
 git submodule init
 git submodule update
