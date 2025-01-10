@@ -636,15 +636,18 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         float cand_timeError = PackedCandidate->timeError();
         if ( cand_timeError > 0. && abs(cand_time) < 1 ) {
           jet_timeNtk += 1;
-          jet_timeError+=cand_timeError;
+          jet_timeError+=cand_timeError*cand_timeError;
           jet_time += cand_time ;
         }
     }
     if ( jet_timeNtk > 0 ) {
         jet_time = jet_time / jet_timeNtk;
+        jet_timeError = sqrt(jet_timeError) / jet_timeNtk;
     }
-    else jet_time = -1;
-
+    else {
+    jet_time = -1;
+    jet_timeError= -1;
+}
     if ( jet_timeError > 0 ) {
         jet_timesig = jet_time / jet_timeError;
     }
