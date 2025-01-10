@@ -333,7 +333,7 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
 	      } // end loop on SVs in jet
               if ( vertex_timeNtk > 0 ) {
                 vertex_time = vertex_time/vertex_timeNtk ;
-                vertex_timeerror = sqrt(vertex_timeerror)/vertex_timeNtk
+                vertex_timeerror = sqrt(vertex_timeerror)/vertex_timeNtk;
 	      }
               else{
     	      vertex_time = -1;
