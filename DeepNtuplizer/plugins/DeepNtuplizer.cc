@@ -370,6 +370,10 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //   std::cout << "        jet " << j << " pt eta phi "
 // 	 << jet.pt() << " " << jet.eta() << " " << jet.phi() << "   nSV " << nSV << std::endl;
 
+	if (jet.pt()>0){
+
+
+
       for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++) {
         const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
       if ( !PackedCandidate ) continue;
@@ -381,7 +385,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
         if ( cand_timeError > 0. && abs(cand_time) < 1 ) {
           jet_timeNtk += 1;
-	  jet_timeError+=cand_timeError;
+	  jet_timeError+=cand_timeError*cand_timeError;
           jet_time += cand_time;
         }
 
@@ -389,9 +393,12 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
       if ( jet_timeNtk > 0 ) {
         jet_time = jet_time/jet_timeNtk;
+        jet_timeError = sqrt(jet_timeError) / jet_timeNtk;
       }
-      else jet_time = -1;
-
+      else{ 
+        jet_time = -1;
+        jet_timeError=-1;
+       }
       jet_time_ = jet_time;
 //$$
     //std::cout << "Jet done" << std::endl;
@@ -402,6 +409,10 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	njetsselected_nogen_++;
 
     }
+
+
+	} //   <-----------
+
   } // end of looping over the jets
 }
 
