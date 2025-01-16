@@ -27,7 +27,7 @@ ReReco to include HGCAL timing
 ========
 HLT instructions from [HLT](https://cmshltupgrade.docs.cern.ch/RunningInstructions/#to-run-on-the-spring24-samples-use-cmssw_14_2_0_pre1-or-later)
 - Rerun L1
-   in the last line -n 400 is chosen due to the size of the file (eos accepts only files of 50 GB)
+   in the last line -n 400 is chosen for a test production due to the size of the file (eos accepts only files up to 50 GB)
 
 ```
 cmsDriver.py Phase2 -s L1,L1TrackTrigger \
