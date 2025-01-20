@@ -82,7 +82,7 @@ process.source = cms.Source("PoolSource",
 - Then run the DeepNtuplizer
 
 ```
-cmsRun DeepNTuples/DeepNtuplizer/production/DeepNtuplizer.py outputFile=test_ttbar_timing_phase2_npf phase2=True inputFiles=file:PPD-Phase2Spring24DIGIRECOMiniAOD-00021.root maxEvents=-1
+cmsRun DeepNtuplizer/production/DeepNtuplizer.py outputFile=test_ttbar_timing_phase2_npf phase2=True inputFiles=file:PPD-Phase2Spring24DIGIRECOMiniAOD-00021.root maxEvents=-1
 ```
 
 Further settings
