@@ -112,7 +112,7 @@ public:
 
     		if (matchedTrackRef.isNonnull() && matchedTrackRef.isAvailable()) {
         		if (tofPIDProton_) trackProtonProb_ = (*tofPIDProton_)[matchedTrackRef];
-			if (tofPIDKaon_)   trackKaonProb_   = (*tofPIDKaon_)[matchedTrackRef];
+			    if (tofPIDKaon_)   trackKaonProb_   = (*tofPIDKaon_)[matchedTrackRef];
         		if (tofPIDPion_)   trackPionProb_   = (*tofPIDPion_)[matchedTrackRef];
     		} else {
         		trackProtonProb_ = -1;
