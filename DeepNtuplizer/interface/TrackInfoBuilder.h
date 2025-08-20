@@ -96,8 +96,8 @@ public:
         trackPionProb_ = -1.f;
         
         if (handlesAreSet_ && packedCandidate->charge() != 0 && packedCandidate->bestTrack()) {
-   	 const reco::Track* bestTr = packedCandidate->bestTrack(); 
-    	 reco::TrackRef matchedTrackRef;
+   	        const reco::Track* bestTr = packedCandidate->bestTrack(); 
+    	    reco::TrackRef matchedTrackRef;
 
 
 	    // Loop over tracks_ (generalTracks from RECO level) to find the one that matches the bestTrack (assigned to PackedCandidate from MiniAOD level)
