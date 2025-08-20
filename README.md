@@ -12,10 +12,10 @@ cmsenv
 git cms-init
 git cms-merge-topic 46019
 git cms-merge-topic 46054
-git cherry-pick b4e8c86523036f8211f096b9145c99a9368c452c 63e73168549cd1e30d404d2104db6c625f5a13e4 # Adding #45508 and #46060
+git cherry-pick b4e8c86523036f8211f096b9145c99a9368c452c 63e73168549cd1e30d404d2104db6c625f5a13e4 # Adding #45508 and #46060     OVO SAM PREKOČIO
 git clone https://github.com/robertplese/DeepNTuples.git
 cd DeepNTuples
-git checkout phase2_142X_hgcaltiming
+git checkout 15_0_0_TOF
 # Add JetToolBox
 git submodule init
 git submodule update
@@ -23,66 +23,35 @@ git submodule update
 scram b -j8
 ```
 
-ReReco to include HGCAL timing
+Producing required MiniAOD files
 ========
-HLT instructions from [HLT](https://cmshltupgrade.docs.cern.ch/RunningInstructions/#to-run-on-the-spring24-samples-use-cmssw_14_2_0_pre1-or-later)
-- Rerun L1
-   in the last line -n 400 is chosen for a test production due to the size of the file (eos accepts only files up to 50 GB)
+```
+cmsDriver.py miniAOD-produce \
+  --filein file:/eos/cms/store/relval/CMSSW_15_0_0/RelValTTbar_14TeV/GEN-SIM-RECO/141X_mcRun4_realistic_v3_STD_RecoOnly_Run4D110_PU-v1/2580000/069414cc-81de-4063-9760-9ec3ef83bc11.root \
+  --fileout file:TTbar_TOFPID_MiniAOD.root \
+  --mc \
+  --eventcontent MINIAODSIM \
+  --datatier MINIAODSIM \
+  --conditions 141X_mcRun4_realistic_v3 \
+  --step PAT \
+  --geometry ExtendedRun4D110 \
+  --era Phase2C17I13M9 \
+  --runUnscheduled \
+  --no_exec \
+  -n -1
 
 ```
-cmsDriver.py Phase2 -s L1,L1TrackTrigger \
---conditions auto:phase2_realistic_T33 \
---geometry Extended2026D110 \
---era Phase2C17I13M9 \
---eventcontent FEVTDEBUGHLT \
---datatier GEN-SIM-DIGI-RAW-MINIAOD \
---customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_1000,Configuration/DataProcessing/Utils.addMonitoring,L1Trigger/Configuration/customisePhase2FEVTDEBUGHLT.customisePhase2FEVTDEBUGHLT,L1Trigger/Configuration/customisePhase2TTOn110.customisePhase2TTOn110 \
---filein /store/mc/Phase2Spring24DIGIRECOMiniAOD/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW-MINIAOD/PU200_AllTP_140X_mcRun4_realistic_v4-v1/130000/51b389e2-ddb2-4c14-9d4f-403546254c83.root \
---fileout file:output_Phase2_L1T.root \
---python_filename rerunL1_cfg.py \
---inputCommands="keep *, drop l1tPFJets_*_*_*, drop l1tTrackerMuons_l1tTkMuonsGmt*_*_HLT" \
---outputCommands="drop l1tTrackerMuons_l1tTkMuonsGmt*_*_HLT" \
---mc \
--n 400 --nThreads 1
-```
-
-- Rerun HLT  
-```
-cmsDriver.py Phase2 -s L1P2GT,HLT:75e33 --processName=HLTX \
---conditions auto:phase2_realistic_T33 \
---geometry Extended2026D110 \
---era Phase2C17I13M9 \
---eventcontent FEVTDEBUGHLT \
---customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_1000 \
---filein file:output_Phase2_L1T.root \
---inputCommands='keep *, drop *_hlt*_*_HLT, drop triggerTriggerFilterObjectWithRefs_l1t*_*_HLT' \
---mc \
--n -1 --nThreads 1
+Open produced .py file (in this case miniAOD-produce_PAT.py) and add these two lines:
 
 ```
-- Run Rereco, using [step3](https://cmsweb.cern.ch/couchdb/reqmgr_config_cache/c6c8107a92728c9d3c7d4e36f2560c01/configFile) process, but modified the following
-
-```
-# Rerun reco step with ticl_v5
-from Configuration.Eras.Era_Phase2C17I13M9_cff import Phase2C17I13M9
-from Configuration.ProcessModifiers.ticl_v5_cff import ticl_v5
-
-process = cms.Process('RECOX',Phase2C17I13M9,ticl_v5)
-
-# Replace input files
-process.source = cms.Source("PoolSource",
-    dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
-                            fileNames = cms.untracked.vstring('file:Phase2_L1P2GT_HLT.root'),
-    inputCommands = cms.untracked.vstring('keep *'),
-    secondaryFileNames = cms.untracked.vstring()
-)
-
+process.MINIAODSIMoutput.outputCommands.append('keep *_*tofPID*_*_*');
+process.MINIAODSIMoutput.outputCommands.append('keep recoTracks_generalTracks_*_*');
 ```
 
-- Then run the DeepNtuplizer
+- Then run the DeepNtuplizer with produced file as an input
 
 ```
-cmsRun DeepNtuplizer/production/DeepNtuplizer.py outputFile=test_ttbar_timing_phase2_npf phase2=True inputFiles=file:PPD-Phase2Spring24DIGIRECOMiniAOD-00021.root maxEvents=-1
+cmsRun DeepNtuplizer/production/DeepNtuplizer.py outputFile=TOFPID_TTbar phase2=True inputFiles=file:TTbar_TOFPID_MiniAOD.root maxEvents=-1
 ```
 
 Further settings
