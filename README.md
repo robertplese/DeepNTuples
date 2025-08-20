@@ -41,14 +41,19 @@ cmsDriver.py miniAOD-produce \
   -n -1
 
 ```
-Open produced .py file (in this case miniAOD-produce_PAT.py) and add these two lines:
+- open produced .py file (in this case miniAOD-produce_PAT.py) and add these two lines in "Path and EndPath definitions" section:
 
 ```
 process.MINIAODSIMoutput.outputCommands.append('keep *_*tofPID*_*_*');
 process.MINIAODSIMoutput.outputCommands.append('keep recoTracks_generalTracks_*_*');
 ```
+- create MiniAOD file with ```cmsRun miniAOD-produce_PAT.py```
 
-- Then run the DeepNtuplizer with produced file as an input
+
+Producing ntuples
+========
+
+- run the DeepNtuplizer with produced file as an input
 
 ```
 cmsRun DeepNtuplizer/production/DeepNtuplizer.py outputFile=TOFPID_TTbar phase2=True inputFiles=file:TTbar_TOFPID_MiniAOD.root maxEvents=-1
