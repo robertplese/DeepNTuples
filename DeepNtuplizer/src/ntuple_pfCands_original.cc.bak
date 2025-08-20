@@ -26,27 +26,175 @@
 #include "RecoVertex/VertexTools/interface/VertexDistanceXY.h"
 #include "RecoVertex/VertexPrimitives/interface/ConvertToFromReco.h"
 
-#include "FWCore/Framework/interface/ConsumesCollector.h"
-#include "../interface/TrackInfoBuilder.h"
+class TrackInfoBuilder{
+public:
+    TrackInfoBuilder(edm::ESHandle<TransientTrackBuilder> & build):
+        builder(build),
+        trackMomentum_(0),
+        trackEta_(0),
+        trackEtaRel_(0),
+        trackPtRel_(0),
+        trackPPar_(0),
+        trackDeltaR_(0),
+        trackPtRatio_(0),
+        trackPParRatio_(0),
+        trackSip2dVal_(0),
+        trackSip2dSig_(0),
+        trackSip3dVal_(0),
+        trackSip3dSig_(0),
 
-void ntuple_pfCands::readSetup(const edm::EventSetup& iSetup){
-    builder = iSetup.getHandle(track_builder_token_);
+        trackJetDecayLen_(0),
+        trackJetDistVal_(0),
+        trackJetDistSig_(0),
+	ttrack_(0)
+{
+
+
 }
 
-void ntuple_pfCands::getInput(const edm::ParameterSet& iConfig, edm::ConsumesCollector& iC){
+    void buildTrackInfo(const pat::PackedCandidate* PackedCandidate_ ,const math::XYZVector&  jetDir, GlobalVector refjetdirection, const reco::Vertex & pv){
+			TVector3 jetDir3(jetDir.x(),jetDir.y(),jetDir.z());
+			if(!PackedCandidate_->hasTrackDetails()) {
+				TVector3 trackMom3(
+					PackedCandidate_->momentum().x(),
+					PackedCandidate_->momentum().y(),
+					PackedCandidate_->momentum().z()
+					);
+				trackMomentum_=PackedCandidate_->p();
+				trackEta_= PackedCandidate_->eta();
+				trackEtaRel_=reco::btau::etaRel(jetDir, PackedCandidate_->momentum());
+				trackPtRel_=trackMom3.Perp(jetDir3);
+				trackPPar_=jetDir.Dot(PackedCandidate_->momentum());
+				trackDeltaR_=reco::deltaR(PackedCandidate_->momentum(), jetDir);
+				trackPtRatio_=trackMom3.Perp(jetDir3) / PackedCandidate_->p();
+				trackPParRatio_=jetDir.Dot(PackedCandidate_->momentum()) / PackedCandidate_->p();
+				trackSip2dVal_=0.;
+				trackSip2dSig_=0.;
+				trackSip3dVal_=0.;
+				trackSip3dSig_=0.;
+				trackJetDecayLen_=0.;
+				trackJetDistVal_=0.;
+				trackJetDistSig_=0.;
+				return;
+			}
+
+        const reco::Track & PseudoTrack =  PackedCandidate_->pseudoTrack();
+
+        reco::TransientTrack transientTrack;
+        transientTrack=builder->build(PseudoTrack);
+        Measurement1D meas_ip2d=IPTools::signedTransverseImpactParameter(transientTrack, refjetdirection, pv).second;
+        Measurement1D meas_ip3d=IPTools::signedImpactParameter3D(transientTrack, refjetdirection, pv).second;
+        Measurement1D jetdist=IPTools::jetTrackDistance(transientTrack, refjetdirection, pv).second;
+	Measurement1D decayl = IPTools::signedDecayLength3D(transientTrack, refjetdirection, pv).second;
+        math::XYZVector trackMom = PseudoTrack.momentum();
+        double trackMag = std::sqrt(trackMom.Mag2());
+        TVector3 trackMom3(trackMom.x(),trackMom.y(),trackMom.z());
+
+
+        trackMomentum_=std::sqrt(trackMom.Mag2());
+        trackEta_= trackMom.Eta();
+        trackEtaRel_=reco::btau::etaRel(jetDir, trackMom);
+        trackPtRel_=trackMom3.Perp(jetDir3);
+        trackPPar_=jetDir.Dot(trackMom);
+        trackDeltaR_=reco::deltaR(trackMom, jetDir);
+        trackPtRatio_=trackMom3.Perp(jetDir3) / trackMag;
+        trackPParRatio_=jetDir.Dot(trackMom) / trackMag;
+
+        trackSip2dVal_=(meas_ip2d.value());
+        trackSip2dSig_=(meas_ip2d.significance());
+        trackSip3dVal_=(meas_ip3d.value());
+        trackSip3dSig_=meas_ip3d.significance();
+
+        trackJetDecayLen_= decayl.value();
+        trackJetDistVal_= jetdist.value();
+        trackJetDistSig_= jetdist.significance();
+
+	ttrack_ = transientTrack;
+
+    }
+
+    const float& getTrackDeltaR() const {return trackDeltaR_;}
+    const float& getTrackEta() const {return trackEta_;}
+    const float& getTrackEtaRel() const {return trackEtaRel_;}
+    const float& getTrackJetDecayLen() const {return trackJetDecayLen_;}
+    const float& getTrackJetDistSig() const {return trackJetDistSig_;}
+    const float& getTrackJetDistVal() const {return trackJetDistVal_;}
+    const float& getTrackMomentum() const {return trackMomentum_;}
+    const float& getTrackPPar() const {return trackPPar_;}
+    const float& getTrackPParRatio() const {return trackPParRatio_;}
+    const float& getTrackPtRatio() const {return trackPtRatio_;}
+    const float& getTrackPtRel() const {return trackPtRel_;}
+    const float& getTrackSip2dSig() const {return trackSip2dSig_;}
+    const float& getTrackSip2dVal() const {return trackSip2dVal_;}
+    const float& getTrackSip3dSig() const {return trackSip3dSig_;}
+    const float& getTrackSip3dVal() const {return trackSip3dVal_;}
+    const reco::TransientTrack getTTrack() const {return ttrack_;}
+
+private:
+
+    edm::ESHandle<TransientTrackBuilder>& builder;
+    // AS edm::ESHandle<TransientTrackBuilder> track_builder_;
+    edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> track_builder_token_;
+    
+    float trackMomentum_;
+    float trackEta_;
+    float trackEtaRel_;
+    float trackPtRel_;
+    float trackPPar_;
+    float trackDeltaR_;
+    float trackPtRatio_;
+    float trackPParRatio_;
+    float trackSip2dVal_;
+    float trackSip2dSig_;
+    float trackSip3dVal_;
+    float trackSip3dSig_;
+
+    float trackJetDecayLen_;
+    float trackJetDistVal_;
+    float trackJetDistSig_;
+    reco::TransientTrack ttrack_;
+
+};
+
+
+void ntuple_pfCands::readSetup(const edm::EventSetup& iSetup){
+
+    // AS iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", builder);
+    
+    builder = iSetup.getHandle(track_builder_token_);
+    
+
+}
+
+void ntuple_pfCands::getInput(const edm::ParameterSet& iConfig){
 	min_candidate_pt_ = (iConfig.getParameter<double>("minCandidatePt"));
+    
 }
 
 void ntuple_pfCands::initBranches(TTree* tree){
-    std::cerr<<"ntuple_pfCands::initBranches"<<std::endl;
+
     addBranch(tree,"n_Cpfcand", &n_Cpfcand_,"n_Cpfcand_/I");
     addBranch(tree,"nCpfcand", &nCpfcand_,"nCpfcand_/F");
-    
-    //////////////////////////
-    addBranch(tree,"Cpfcan_tofPID_probP", &Cpfcan_tofPID_probP_, "Cpfcan_tofPID_probP_[n_Cpfcand_]/F");
-    addBranch(tree,"Cpfcan_tofPID_probK", &Cpfcan_tofPID_probK_, "Cpfcan_tofPID_probK_[n_Cpfcand_]/F");
-    addBranch(tree,"Cpfcan_tofPID_probPi", &Cpfcan_tofPID_probPi_, "Cpfcan_tofPID_probPi_[n_Cpfcand_]/F");
-    ////////////////////////
+
+    /*    addBranch(tree,"n_p_Cpfcand", &n_p_Cpfcand_,"n_p_Cpfcand_/I");
+    addBranch(tree,"n_p_Npfcand", &n_p_Npfcand_,"n_p_Npfcand_/I");
+    addBranch(tree,"n_p_Svcand", &n_p_Svcand_,"n_p_Svcand_/I");
+
+    addBranch(tree,"sjet_pt", &sjet_pt_,"sjet_pt_/F");
+    addBranch(tree,"sjet_eta", &sjet_eta_,"sjet_eta_/F");
+    addBranch(tree,"sjet_ncpf", &sjet_ncpf_,"sjet_ncpf_/F");
+    addBranch(tree,"sjet_nnpf", &sjet_nnpf_,"sjet_nnpf_/F");
+    addBranch(tree,"sjet_nsv", &sjet_nsv_,"sjet_nsv_/F");
+    addBranch(tree,"sjet_npv", &sjet_npv_,"sjet_npv_/F");
+    addBranch(tree,"sjet_trackSumJetEtRatio", &sjet_trackSumJetEtRatio_,"sjet_trackSumJetEtRatio_/F");
+    addBranch(tree,"sjet_trackSumJetDeltaR", &sjet_trackSumJetDeltaR_,"sjet_trackSumJetDeltaR_/F");
+    addBranch(tree,"sjet_vertexCategory", &sjet_vertexCategory_,"sjet_vertexCategory_/F");
+    addBranch(tree,"sjet_trackSip2dValAboveCharm", &sjet_trackSip2dValAboveCharm_,"sjet_trackSip2dValAboveCharm_/F");
+    addBranch(tree,"sjet_trackSip2dSigAboveCharm", &sjet_trackSip2dSigAboveCharm_,"sjet_trackSip2dSigAboveCharm_/F");
+    addBranch(tree,"sjet_trackSip3dValAboveCharm", &sjet_trackSip3dValAboveCharm_,"sjet_trackSip3dValAboveCharm_/F");
+    addBranch(tree,"sjet_trackSip3dSigAboveCharm", &sjet_trackSip3dSigAboveCharm_,"sjet_trackSip3dSigAboveCharm_/F");
+    addBranch(tree,"sjet_jetNSelectedTracks", &sjet_jetNSelectedTracks_,"sjet_jetNSelectedTracks_/F");
+    addBranch(tree,"sjet_jetNTracksEtaRel", &sjet_jetNTracksEtaRel_,"sjet_jetNTracksEtaRel_/F");*/
 
     addBranch(tree,"Cpfcan_pt", &Cpfcan_pt_,"Cpfcan_pt_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_px", &Cpfcan_px_,"Cpfcan_px_[n_Cpfcand_]/F");
@@ -226,8 +374,6 @@ void ntuple_pfCands::initBranches(TTree* tree){
 
     addBranch(tree,"Cpfcan_HadFrac",&Cpfcan_HadFrac_,"Cpfcan_HadFrac_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_CaloFrac",&Cpfcan_CaloFrac_,"Cpfcan_CaloFrac_[n_Cpfcand_]/F");
-   
-
 
 }
 
@@ -236,20 +382,11 @@ void ntuple_pfCands::readEvent(const edm::Event& iEvent){
 
     n_Npfcand_=0;
     n_Cpfcand_=0;
+
 }
-//////////////////////////////////////
-void ntuple_pfCands::setHandles(
-    const edm::Handle<edm::ValueMap<float>>& tofPIDProton,
-    const edm::Handle<edm::ValueMap<float>>& tofPIDKaon,
-    const edm::Handle<edm::ValueMap<float>>& tofPIDPion,
-    const edm::Handle<reco::TrackCollection>& tracks
-) {
-    this->tofPIDProton_ = tofPIDProton;
-    this->tofPIDKaon_   = tofPIDKaon;
-    this->tofPIDPion_   = tofPIDPion;
-    this->tracks_       = tracks;
-}
-///////////////////////////////////
+
+
+
 //use either of these functions
 
 bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  edm::View<pat::Jet> * coll, float EventTime){
@@ -275,10 +412,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         if(PackedCandidate){
             if(PackedCandidate->pt() < min_candidate_pt_) continue; 
             if(PackedCandidate->charge()!=0){
-          if (!tracks_.isValid() || !tofPIDProton_.isValid()) {
-}
-	 trackinfo.setHandles(tofPIDProton_, tofPIDKaon_, tofPIDPion_, tracks_);
-	 trackinfo.buildTrackInfo(PackedCandidate, jetDir, jetRefTrackDir, pv);
+                trackinfo.buildTrackInfo(PackedCandidate,jetDir,jetRefTrackDir,pv);
                 sortedcharged.push_back(sorting::sortingClass<size_t>
                 (i, trackinfo.getTrackSip2dSig(),
                         -mindrsvpfcand(PackedCandidate), PackedCandidate->pt()/jet_uncorr_pt));
@@ -337,16 +471,6 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
             size_t fillntupleentry= sortedchargedindices.at(i);
             if(fillntupleentry>=max_pfcand_) continue;
-            ////////////////////////////////////////
-           trackinfo.setHandles(tofPIDProton_, tofPIDKaon_, tofPIDPion_, tracks_);
-           trackinfo.buildTrackInfo(PackedCandidate_, jetDir, jetRefTrackDir, pv);
-           float protonProb = trackinfo.getTrackProtonProb();
-           float kaonProb = trackinfo.getTrackKaonProb();
-           float pionProb = trackinfo.getTrackPionProb();
-           Cpfcan_tofPID_probP_[fillntupleentry] = protonProb;
-           Cpfcan_tofPID_probK_[fillntupleentry] = kaonProb;
-           Cpfcan_tofPID_probPi_[fillntupleentry] = pionProb;
-            ////////////////////////////////////////
 
 
             Cpfcan_pdgID_[fillntupleentry] = pdgid_;
@@ -395,6 +519,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             // Cpfcan_vertex_z_[fillntupleentry]=PackedCandidate_->vertexRef()->z();
             Cpfcan_pv_z_[fillntupleentry]=pv.z();            
             Cpfcan_z_[fillntupleentry] = PackedCandidate_->p4().z();
+            // std::cout<<PackedCandidate_->p4().z()<<" track"<<track->dz()<<std::endl;
             Cpfcan_vertex_etarel_[fillntupleentry]=etasign*(PackedCandidate_->vertex().eta()-jet.eta());
             Cpfcan_vertexRef_mass_[fillntupleentry]=PackedCandidate_->vertexRef()->p4().M();
 
@@ -424,8 +549,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_dlambdadz_[fillntupleentry]=  catchInfs(myCov[1][4],-0.03); //zero if pvAssociationQuality ==7 ?
              */
             
-	trackinfo.setHandles(tofPIDProton_, tofPIDKaon_, tofPIDPion_, tracks_);
-	trackinfo.buildTrackInfo(PackedCandidate_, jetDir, jetRefTrackDir, pv);
+            trackinfo.buildTrackInfo(PackedCandidate_,jetDir,jetRefTrackDir,pv);
 
 	    const reco::TransientTrack ttrack = trackinfo.getTTrack();
 	    float mindistsv = mindistsvpfcand(ttrack);
@@ -487,7 +611,10 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 	    Cpfcan_numberOfPixelHits_[fillntupleentry] = catchInfs(PackedCandidate_->numberOfPixelHits(),-1);
       
       
-	    		Cpfcan_chi2_[fillntupleentry] = PackedCandidate_->hasTrackDetails() ? \
+	    //std::cout << PackedCandidate_->lostInnerHits()<< " inner hits " <<std::endl;
+	    //std::cout << PackedCandidate_->numberOfPixelHits()<< " Pixel hits + masked " <<std::endl;
+	    //std::cout <<PackedCandidate_->pixelLayersWithMeasurement()<< " Pixel hits " <<std::endl;
+			Cpfcan_chi2_[fillntupleentry] = PackedCandidate_->hasTrackDetails() ? \
 				catchInfsAndBound(PackedCandidate_->pseudoTrack().normalizedChi2(),300,-1,300) : -1;
 			//for some reason this returns the quality enum not a mask.
 			Cpfcan_quality_[fillntupleentry] = PackedCandidate_->hasTrackDetails() ? 
@@ -561,6 +688,9 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
               if(p.validHitFilter(hit)){// if the hit is valid
                //Pixel Barrel // it is in pixel barrel
                if(p.pixelBarrelHitFilter(hit)){
+                //std::cout << "valid hit found in pixel Barrel layer " << p.getLayer(hit) << std::endl;
+                //if(p.getLayer(hit)==1){
+                // std::cout<< (hit >> LayerOffset) << " " << ((hit >> LayerOffset) & LayerMask) << std::endl;
                 //}  
                 if(p.getLayer(hit)==1) Cpfcan_nhitpixelBarrelLayer1 = Cpfcan_nhitpixelBarrelLayer1+1;
                 if(p.getLayer(hit)==2) Cpfcan_nhitpixelBarrelLayer2 = Cpfcan_nhitpixelBarrelLayer2+1;
@@ -569,11 +699,13 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
                } 
                //Pixel Endcap
                if(p.pixelEndcapHitFilter(hit)){
+                //std::cout << "valid hit found in pixel Endcap layer " << p.getLayer(hit) << std::endl;
                 if(p.getLayer(hit)==1) Cpfcan_nhitpixelEndcapLayer1 = Cpfcan_nhitpixelEndcapLayer1+1;
                 if(p.getLayer(hit)==2) Cpfcan_nhitpixelEndcapLayer2 = Cpfcan_nhitpixelEndcapLayer2+1;
                } 
                //Strip TIB
                if(p.stripTIBHitFilter(hit)){
+                //std::cout << "valid hit found in TIB layer " << p.getLayer(hit) << std::endl;
                 if(p.getLayer(hit)==1) Cpfcan_nhitstripTIBLayer1 = Cpfcan_nhitstripTIBLayer1+1;
                 if(p.getLayer(hit)==2) Cpfcan_nhitstripTIBLayer2 = Cpfcan_nhitstripTIBLayer2+1;
                 if(p.getLayer(hit)==3) Cpfcan_nhitstripTIBLayer3 = Cpfcan_nhitstripTIBLayer3+1;
@@ -581,12 +713,14 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
                } 
                //Strip TID
                if(p.stripTIDHitFilter(hit)){
+                //std::cout << "valid hit found in TID layer " << p.getLayer(hit) << std::endl;
                 if(p.getLayer(hit)==1) Cpfcan_nhitstripTIDLayer1 = Cpfcan_nhitstripTIDLayer1+1;
                 if(p.getLayer(hit)==2) Cpfcan_nhitstripTIDLayer2 = Cpfcan_nhitstripTIDLayer2+1;
                 if(p.getLayer(hit)==3) Cpfcan_nhitstripTIDLayer3 = Cpfcan_nhitstripTIDLayer3+1;
                } 
                //Strip TOB
                if(p.stripTOBHitFilter(hit)){
+                //std::cout << "valid hit found in TOB layer " << p.getLayer(hit) << std::endl;
                 if(p.getLayer(hit)==1) Cpfcan_nhitstripTOBLayer1 = Cpfcan_nhitstripTOBLayer1+1;
                 if(p.getLayer(hit)==2) Cpfcan_nhitstripTOBLayer2 = Cpfcan_nhitstripTOBLayer2+1;
                 if(p.getLayer(hit)==3) Cpfcan_nhitstripTOBLayer3 = Cpfcan_nhitstripTOBLayer3+1;
@@ -596,6 +730,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
                } 
                //Strip TEC
                if(p.stripTECHitFilter(hit)){
+                //std::cout << "valid hit found in TEC layer " << p.getLayer(hit) << std::endl;
                 if(p.getLayer(hit)==1) Cpfcan_nhitstripTECLayer1 = Cpfcan_nhitstripTECLayer1+1;
                 if(p.getLayer(hit)==2) Cpfcan_nhitstripTECLayer2 = Cpfcan_nhitstripTECLayer2+1;
                 if(p.getLayer(hit)==3) Cpfcan_nhitstripTECLayer3 = Cpfcan_nhitstripTECLayer3+1;
@@ -607,7 +742,14 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
                 if(p.getLayer(hit)==9) Cpfcan_nhitstripTECLayer9 = Cpfcan_nhitstripTECLayer9+1;
                } 
               }
-              }
+              //// expert level: printout the hit in 11-bit binary format
+              //std::cout << "hit in 11-bit binary format = ";
+              //for (int j = 10; j >= 0; j--){
+              //    int bit = (hit >> j) & 0x1;
+              //    std::cout << bit;
+              //}
+              //std::cout << std::endl;
+             }
              //Pixel Barrel 
              Cpfcan_nhitpixelBarrelLayer1_[fillntupleentry] = (track_ptr->hitPattern().numberOfValidPixelBarrelHits()) ? catchInfsAndBound(Cpfcan_nhitpixelBarrelLayer1,-1,0,100,0) : 0;
              Cpfcan_nhitpixelBarrelLayer2_[fillntupleentry] = (track_ptr->hitPattern().numberOfValidPixelBarrelHits()) ? catchInfsAndBound(Cpfcan_nhitpixelBarrelLayer2,-1,0,100,0) : 0;
@@ -800,7 +942,19 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     } // end loop over jet.numberOfDaughters()
 
-
+    /*
+    std::cout <<"numbers charged/neutrals"<<std::endl;
+    std::cout << n_Cpfcand_ << std::endl;
+    std::cout << n_Npfcand_ << std::endl;
+    std::cout <<"charged IPs"<<std::endl;
+    for(size_t i=0;i<n_Cpfcand_;i++){
+        std::cout << Cpfcan_BtagPf_trackSip2dSig_[i] << " " << Npfcan_drminsv_[i] << " " << Npfcan_ptrel_[i]<<std::endl;
+    }
+    std::cout <<"neutrals minDR"<<std::endl;
+    for(size_t i=0;i<n_Npfcand_;i++){
+        std::cout << Npfcan_drminsv_[i] << " " << Npfcan_ptrel_[i]<<std::endl;
+    }
+     */
 
     nCpfcand_=n_Cpfcand_;
     nNpfcand_=n_Npfcand_;
@@ -810,7 +964,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 
 float ntuple_pfCands::mindrsvpfcand(const pat::PackedCandidate* pfcand) {
- //   std::cerr<<"ntuple_pfCands::mindrsvpfcand"<<std::endl;
+
     float mindr_ = jetradius_;
     for (unsigned int i=0; i<secVertices()->size(); ++i) {
         if(!pfcand) continue;
@@ -823,7 +977,7 @@ float ntuple_pfCands::mindrsvpfcand(const pat::PackedCandidate* pfcand) {
 }
 
 float ntuple_pfCands::mindistsvpfcand(const reco::TransientTrack track) {
-  //  std::cerr<<"ntuple_pfCands::mindistsvpfcand"<<std::endl;
+
   float mindist_ = 999.999;
   float out_dist = 0.0;
   for (unsigned int i=0; i<secVertices()->size(); ++i) {

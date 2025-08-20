@@ -33,6 +33,7 @@ public:
     virtual ~ntuple_content();
 
     virtual void getInput(const edm::ParameterSet& iConfig){}
+    virtual void getInput(const edm::ParameterSet& iConfig, edm::ConsumesCollector& iC) {} //////////////////////
     virtual void initBranches(TTree* )=0;
     virtual void readEvent(const edm::Event& iEvent)=0;
     virtual void readSetup(const edm::EventSetup& iSetup){}

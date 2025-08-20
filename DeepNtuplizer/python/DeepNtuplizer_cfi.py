@@ -36,9 +36,9 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 qgtagger        = cms.string("QGTagger"),
                                 candidates      = cms.InputTag("packedPFCandidates"),
                                 minCandidatePt  = cms.double(0.95),
-                                
                                 useHerwigCompatible=cms.bool(False),
                                 isHerwig=cms.bool(False),
                                 useOffsets=cms.bool(True),
-                                applySelection=cms.bool(True)
+                                applySelection=cms.bool(False),
+                                tracks = cms.InputTag("generalTracks"),
                                 )

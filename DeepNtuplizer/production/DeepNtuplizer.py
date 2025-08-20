@@ -49,14 +49,15 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("Configuration.EventContent.EventContent_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 #process.load('Configuration.Geometry.GeometryExtended2026D95Reco_cff')
-process.load('Configuration.Geometry.GeometryExtended2026D110Reco_cff')
+#process.load('Configuration.Geometry.GeometryExtended2026D110Reco_cff')
+process.load('Configuration.Geometry.GeometryExtendedRun4D110Reco_cff')
 #process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
 #'auto:run2_mc'
-process.GlobalTag = GlobalTag(process.GlobalTag, '140X_mcRun4_realistic_v4', '')
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '141X_mcRun4_realistic_v3', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realisitc', '')
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -65,7 +66,8 @@ process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 
 process.options = cms.untracked.PSet(
    allowUnscheduled = cms.untracked.bool(True),  
-   wantSummary=cms.untracked.bool(False)
+   wantSummary=cms.untracked.bool(False),
+#   TryToContinue = cms.untracked.vstring('ProductNotFound')
 )
 
 
@@ -258,6 +260,51 @@ process.TFileService = cms.Service("TFileService",
 
 # DeepNtuplizer
 process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
+
+#######################################
+#process.deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
+ #                               vertices = cms.InputTag("offlineSlimmedPrimaryVertices4D"),
+  #                              secVertices = cms.InputTag("slimmedSecondaryVertices"),
+   #                             jets       = cms.InputTag("slimmedJetsPuppi"),
+    #                            losttracks = cms.InputTag("lostTracks"),
+     #                           packed   = cms.InputTag("packedGenParticles"),
+      #                          pixelhit = cms.InputTag("slimmedJets", "tagInfos", "PAT"),
+       #                         jetR       = cms.double(0.4),
+        #                        runFatJet = cms.bool(False),
+         #                       eta = cms.bool(True),
+          #                      puppi = cms.bool(True),
+           #                     runDeepVertex = cms.bool(False),
+            #                    pupInfo = cms.InputTag("slimmedAddPileupInfo"),
+             #                   rhoInfo = cms.InputTag("fixedGridRhoFastjetAll"),	
+              #                  SVs  = cms.InputTag("slimmedSecondaryVertices"),
+               #                 LooseSVs = cms.InputTag("inclusiveCandidateSecondaryVertices"),
+                #                genJetMatchWithNu = cms.InputTag("patGenJetMatchWithNu"),
+                 #               genJetMatchRecluster = cms.InputTag("patGenJetMatchRecluster"),
+#                                genJetMatchAllowDuplicates = cms.InputTag("patGenJetMatchAllowDuplicates"),
+ #                               pruned = cms.InputTag("prunedGenParticles"),
+  #                              fatjets = cms.InputTag('slimmedJetsAK8'),
+   #                             muons = cms.InputTag("slimmedMuons"),
+    #                            genvtx_pos=cms.InputTag("genParticles","xyz0"),
+     #                           genvtx_t=cms.InputTag("genParticles","t0"),
+      #                          electrons = cms.InputTag("slimmedElectrons"),
+       #                         jetPtMin     = cms.double(10.0),
+        #                        jetPtMax     = cms.double(2000),
+         #                       jetAbsEtaMin = cms.double(0.0),
+          #                      jetAbsEtaMax = cms.double(5.0),
+           #                     gluonReduction = cms.double(0.0),
+            #                    tagInfoName = cms.string('deepNN'),
+             #                   tagInfoFName = cms.string('pfBoostedDoubleSVAK8'),
+              #                  bDiscriminators = cms.vstring(),
+               #                 qgtagger        = cms.string("QGTagger"),
+                #                candidates      = cms.InputTag("packedPFCandidates"),
+                 #               minCandidatePt  = cms.double(0.95),
+                  #              useHerwigCompatible=cms.bool(False),
+                   #             isHerwig=cms.bool(False),
+                    #            useOffsets=cms.bool(True),
+                     #           applySelection=cms.bool(False),
+                      #          tracks = cms.InputTag("generalTracks"),
+                       #         )
+######################################
 process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour')
 process.deepntuplizer.bDiscriminators = bTagDiscriminators 
 process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')

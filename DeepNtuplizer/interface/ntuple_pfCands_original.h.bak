@@ -15,8 +15,6 @@
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 
-#include "FWCore/Framework/interface/ConsumesCollector.h"
-
 class ntuple_pfCands: public ntuple_content{
 public:
 
@@ -25,23 +23,17 @@ public:
   //n_Cpfcand_(0),n_Npfcand_(0),n_p_Cpfcand_(0),n_p_Npfcand_(0),n_p_Svcand_(0){}
 
     void setJetRadius(const float& radius){jetradius_=radius;}
-    void getInput(const edm::ParameterSet& iConfig, edm::ConsumesCollector& iC) override;
-    void initBranches(TTree* ) override;
-    void readEvent(const edm::Event& iEvent) override;
+    void getInput(const edm::ParameterSet& iConfig);
+    void initBranches(TTree* );
+    void readEvent(const edm::Event& iEvent);
     void readSetup(const edm::EventSetup& iSetup);
-    void setHandles(
-        const edm::Handle<edm::ValueMap<float>>& tofPIDProton,
-        const edm::Handle<edm::ValueMap<float>>& tofPIDKaon,
-        const edm::Handle<edm::ValueMap<float>>& tofPIDPion,
-        const edm::Handle<reco::TrackCollection>& tracks  // note the reference position
-    );
-    
+
 
     //use either of these functions
 
     
 //$$    bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0);
-    bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0, float EventTime = -1) override;
+    bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0, float EventTime = -1);
     void setTrackBuilderToken(const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord>& track_builder_token) {
 		track_builder_token_ = track_builder_token;
 	}
@@ -53,14 +45,6 @@ private:
 
     edm::ESHandle<TransientTrackBuilder> builder;
     edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> track_builder_token_;
-///////////////////////////////////////////////////////////////
-      
-    edm::Handle<edm::ValueMap<float>> tofPIDProton_;
-    edm::Handle<edm::ValueMap<float>> tofPIDKaon_;
-    edm::Handle<edm::ValueMap<float>> tofPIDPion_;
-    edm::Handle<reco::TrackCollection> tracks_;
-    
-//////////////////////////////////////////////////////////////
 
     int n_Cpfcand_;
     int n_Npfcand_;
@@ -68,14 +52,6 @@ private:
     float nCpfcand_;
 
     static constexpr size_t max_pfcand_=50;
-    
-    
-    
-    ////////////////////////////////////
-    float Cpfcan_tofPID_probP_[max_pfcand_];
-    float Cpfcan_tofPID_probK_[max_pfcand_];
-    float Cpfcan_tofPID_probPi_[max_pfcand_];
-    //////////////////////////////
 
     float  Cpfcan_pt_[max_pfcand_];
     float  Cpfcan_px_[max_pfcand_];

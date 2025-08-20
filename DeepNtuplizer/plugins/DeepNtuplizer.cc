@@ -60,6 +60,9 @@
 #include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
 
 
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+#include "../interface/TrackInfoBuilder.h"
+
 #if defined( __GXX_EXPERIMENTAL_CXX0X__)
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #endif
@@ -93,6 +96,18 @@ private:
   edm::EDGetTokenT<double> rhoToken_;
   edm::EDGetTokenT< edm::View<reco::BaseTagInfo> > pixHitsToken_;
   std::string t_qgtagger;
+  
+  
+ //////////////////////////////////////////////////////////////////
+ edm::EDGetTokenT<edm::ValueMap<float>> tofPIDProbPToken_;
+edm::EDGetTokenT<edm::ValueMap<float>> tofPIDProbKToken_;
+edm::EDGetTokenT<edm::ValueMap<float>> tofPIDProbPiToken_;
+
+// Token for tracks
+edm::EDGetTokenT<reco::TrackCollection> tracksToken_;
+ 
+ /////////////////////////////////////////////////////////////////
+  
 
   edm::Service<TFileService> fs;
   TTree *tree_;
@@ -120,7 +135,7 @@ private:
   std::vector<std::string> module_names_;
 
   bool applySelection_;
-};
+  };
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
@@ -130,7 +145,19 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   rhoToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoInfo"))),
   pixHitsToken_(consumes< edm::View<reco::BaseTagInfo> > (iConfig.getParameter<edm::InputTag>("pixelhit"))),
   t_qgtagger(iConfig.getParameter<std::string>("qgtagger"))
-{
+
+{	
+  //////////////////////////////////////
+    tofPIDProbPToken_  = consumes<edm::ValueMap<float>>(edm::InputTag("tofPID", "probP",  "RECO"));
+    tofPIDProbKToken_  = consumes<edm::ValueMap<float>>(edm::InputTag("tofPID", "probK",  "RECO"));
+    tofPIDProbPiToken_ = consumes<edm::ValueMap<float>>(edm::InputTag("tofPID", "probPi", "RECO"));
+
+    tracksToken_ = consumes<reco::TrackCollection>(edm::InputTag("generalTracks"));
+//    tracksToken_ = consumes<reco::TrackCollection>(edm::InputTag("trackExtenderWithMTD"));
+
+  ///////////////////////////////////
+
+ 
 
   /*
    *  Initialise the modules here
@@ -178,6 +205,8 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   addModule(jetinfo, "jetinfo");
 
   ntuple_pfCands * pfcands = new ntuple_pfCands();
+ 
+
   pfcands->setJetRadius(jetR);
   pfcands->setTrackBuilderToken(
       esConsumes<TransientTrackBuilder, TransientTrackRecord>(
@@ -217,7 +246,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
    *
    * parse the input parameters (if any)
    */
-
+   
   for(auto& m: modules_)
     m->getInput(iConfig);
 
@@ -238,7 +267,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
   //global info
-
+  
   edm::Handle<reco::VertexCollection> vertices;
   iEvent.getByToken(vtxToken_, vertices);
   if (vertices->empty()) return; // skip the event if no PV found
@@ -263,6 +292,25 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   edm::Handle<edm::View<pat::Jet> > jets;
   iEvent.getByToken(jetToken_, jets);
+  
+  
+  ///////////////////////////////////////////////77
+  edm::Handle<edm::ValueMap<float>> tofProtonHandle;
+  iEvent.getByToken(tofPIDProbPToken_, tofProtonHandle);
+
+  edm::Handle<edm::ValueMap<float>> tofKaonHandle;
+  iEvent.getByToken(tofPIDProbKToken_, tofKaonHandle);
+
+  edm::Handle<edm::ValueMap<float>> tofPionHandle;
+  iEvent.getByToken(tofPIDProbPiToken_, tofPionHandle);
+
+  edm::Handle<reco::TrackCollection> tracksHandle;
+  iEvent.getByToken(tracksToken_, tracksHandle);
+
+  auto* pfcands = static_cast<ntuple_pfCands*>(modules_[2]);
+
+  //if (tofProtonHandle.isValid()) {   // check if the Handle actually points to data
+    pfcands->setHandles(tofProtonHandle, tofKaonHandle, tofPionHandle, tracksHandle);  
 
   edm::Handle< edm::View<reco::BaseTagInfo> > pixHits;
   iEvent.getByToken(pixHitsToken_, pixHits);
@@ -349,14 +397,15 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     bool writejet=true;
     size_t idx = 0;
     for(auto& m:modules_){
-      //std::cout << module_names_[idx] << std::endl;
+       //std::cout << module_names_[idx] << std::endl;
       //if(! m->fillBranches(jet, jetidx, jets.product())){
       if(! m->fillBranches(jet, jetidx, jets.product(),event_time)){
-	writejet=false;
+        writejet=false;
 	if(applySelection_) break;
       }
       idx++;
     }
+
     //$$
       float jet_time	   = 0;
       float jet_timeNtk    = 0;
