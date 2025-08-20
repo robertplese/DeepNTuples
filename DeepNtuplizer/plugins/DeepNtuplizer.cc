@@ -307,11 +307,10 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::Handle<reco::TrackCollection> tracksHandle;
   iEvent.getByToken(tracksToken_, tracksHandle);
 
-  auto* pfcands = static_cast<ntuple_pfCands*>(modules_[2]);
-
-  //if (tofProtonHandle.isValid()) {   // check if the Handle actually points to data
-    pfcands->setHandles(tofProtonHandle, tofKaonHandle, tofPionHandle, tracksHandle);  
-
+  auto* pfcands = static_cast<ntuple_pfCands*>(modules_[2]);  //maybe there is some more elegant way than modules_[2]
+	
+  pfcands->setHandles(tofProtonHandle, tofKaonHandle, tofPionHandle, tracksHandle);  
+///////////////////////////////////////////////////
   edm::Handle< edm::View<reco::BaseTagInfo> > pixHits;
   iEvent.getByToken(pixHitsToken_, pixHits);
   for(auto& m:modules_){
