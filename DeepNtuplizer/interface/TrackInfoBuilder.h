@@ -114,10 +114,10 @@ public:
         		if (tofPIDProton_) trackProtonProb_ = (*tofPIDProton_)[matchedTrackRef];
 			if (tofPIDKaon_)   trackKaonProb_   = (*tofPIDKaon_)[matchedTrackRef];
         		if (tofPIDPion_)   trackPionProb_   = (*tofPIDPion_)[matchedTrackRef];
-    		} else {//if no probability assigned we continue with pion mass hypothesis
+    		} else {
         		trackProtonProb_ = -1;
         		trackKaonProb_   = -1;
-        		trackPionProb_   = 1;   
+        		trackPionProb_   = -1;   
     		}
 	}
         
