@@ -14,16 +14,14 @@ The following snippet of `TrackInfoBuilder.h` requires special attention:
     if (handlesAreSet_ && packedCandidate->charge() != 0 && packedCandidate->bestTrack()) {
    	        const reco::Track* bestTr = packedCandidate->bestTrack(); 
     	    reco::TrackRef matchedTrackRef;
-
-
+			
 	    // Loop over tracks_ (generalTracks from RECO level) to find the one that matches the bestTrack (assigned to PackedCandidate from MiniAOD level)
     		for (size_t i = 0; i < tracks_->size(); ++i) {
-        		if ((std::abs((*tracks_)[i].pt()-bestTr->pt())<0.01) && 
-            	 	(std::abs((*tracks_)[i].eta()-bestTr->eta())<0.01) && 
-            	 	(std::abs((*tracks_)[i].phi()-bestTr->phi())<0.01)) {
-            			matchedTrackRef = reco::TrackRef(tracks_, i);  // build TrackRef from collection and index
-            			break;
-        		}
+        		if ((std::abs((*tracks_)[i].pt()-bestTr->pt())<0.01) &&
+                (reco::deltaR((*tracks_)[i].eta(),(*tracks_)[i].phi(),bestTr->eta(),bestTr->phi()))<0.01) {
+                    	matchedTrackRef = reco::TrackRef(tracks_, i);  
+                        break;
+                    }
     		}
 
     		if (matchedTrackRef.isNonnull() && matchedTrackRef.isAvailable()) {
