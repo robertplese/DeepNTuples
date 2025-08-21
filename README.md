@@ -6,8 +6,8 @@ Installation (CMSSW 14_2_0_pre1) & setup for rereco
 ============
 
 ```
-cmsrel CMSSW_14_2_0_pre1
-cd CMSSW_14_2_0_pre1/src/
+cmsrel CMSSW_15_0_0
+cd CMSSW_15_0_0/src/
 cmsenv
 git cms-init
 git cms-merge-topic 46019
