@@ -46,7 +46,11 @@ cmsDriver.py miniAOD-produce \
 process.MINIAODSIMoutput.outputCommands.append('keep *_*tofPID*_*_*');
 process.MINIAODSIMoutput.outputCommands.append('keep recoTracks_generalTracks_*_*');
 ```
-- create MiniAOD file with ```cmsRun miniAOD-produce_PAT.py```
+- produce MiniAOD file with
+
+```
+cmsRun miniAOD-produce_PAT.py
+```
 
 
 Producing ntuples
